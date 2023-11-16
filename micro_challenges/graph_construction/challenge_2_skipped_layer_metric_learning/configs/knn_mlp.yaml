@@ -1,0 +1,38 @@
+# CommonFramework configuration
+project: MicroChallenges_GraphConstruction_2_Testing # Used in logging
+network: KNN_MLP
+gpus: 1
+nodes: 1
+
+# Dataset parameters
+data_split: [500, 100, 10] # Number of [training, validation, testing] examples
+batch_size: 1
+pretrained_embedding_path: "/global/homes/d/danieltm/ExaTrkX/DeepGeometry/TrackingMicroChallenges/MicroChallenges_GraphConstruction_2_Testing/ljdthnko/checkpoints/epoch=99-step=50000.ckpt"
+
+# Model parameters
+node_features: [x, y]
+node_scales:   [1., 1.]
+emb_hidden: 128
+nb_layer: 4
+num_input_neighbors: 1
+emb_dim: 6
+activation: Tanh
+randomisation: 1
+r_train: 1.0
+knn: 50
+knn_val: 1000
+normalize_output: False
+
+# Training parameters
+warmup: 5
+margin: 1.0
+moat_margin: 0.3
+lr: 0.001
+factor: 0.7
+patience: 20
+max_epochs: 100
+balanced_loss: True
+moated_loss: True
+pos_weight: 1.0
+metric_to_monitor: f1
+metric_mode: max

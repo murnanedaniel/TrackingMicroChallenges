@@ -1,12 +1,13 @@
 from setuptools import setup, find_packages
 
 setup(
-    name='ExaTrkX-DeepGeometry',
-    version='0.1',
-    description='Deep Learning for Particle Tracking',
-    author='Your Name',
-    author_email='your.email@example.com',
-    url='https://github.com/yourusername/ExaTrkX-DeepGeometry',
+    name='TrackingMicroChallenges',
+    version='0.1.0',
+    description='Deep Learning MicroChallenges for Particle Tracking',
+    author='Daniel Murnane',
+    author_email='dtmurnane@lbl.gov',
+    url='https://github.com/ExaTrkX/TrackingMicroChallenges',
+    package_dir={"microchallenges": "src"},
     packages=find_packages(),
     install_requires=[
         'numpy',
@@ -15,6 +16,10 @@ setup(
         'pandas',
         'torch',
         'tqdm',
-        # Add other dependencies as needed
+        'class_resolver',
+        'torch',
+        'torch_geometric',
+        'lightning',
+        'wandb',
     ],
 )

@@ -6,7 +6,10 @@ import lightning.pytorch as pl
 import torch
 from torch_geometric.data import DataLoader
 
-from microchallenges.ml_utils import make_lr_scheduler, make_optimizer
+import sys
+sys.path.append("../")
+
+from src.ml_utils import make_lr_scheduler, make_optimizer
 
 # Global definitions
 device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -57,7 +60,7 @@ class MicroChallenge(pl.LightningModule):
 
     def configure_optimizers(self):
 
-        optimizer = make_optimizer(self.hparams)
+        optimizer = make_optimizer(self)
         
         scheduler = [
             {
@@ -69,3 +72,26 @@ class MicroChallenge(pl.LightningModule):
         ]
 
         return optimizer, scheduler
+
+    def validation_step(self, batch, batch_idx):
+        """
+        Step to evaluate the model's performance
+        """
+        outputs = self.shared_evaluation(batch)
+
+        return outputs["loss"]
+
+    def on_before_optimizer_step(self, optimizer, *args, **kwargs):
+        # warm up lr
+        if self.hparams.get("warmup", 0) and (
+            self.trainer.current_epoch < self.hparams["warmup"]
+        ):
+            lr_scale = min(
+                1.0, float(self.trainer.current_epoch + 1) / self.hparams["warmup"]
+            )
+            for pg in optimizer.param_groups:
+                pg["lr"] = lr_scale * self.hparams["lr"]
+
+        # after reaching minimum learning rate, stop LR decay
+        for pg in optimizer.param_groups:
+            pg["lr"] = max(pg["lr"], self.hparams.get("min_lr", 0))

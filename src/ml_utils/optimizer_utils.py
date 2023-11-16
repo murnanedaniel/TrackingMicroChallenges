@@ -1,9 +1,13 @@
-def make_lr_scheduler(self, optimizer):
-    warmup_epochs = self.hparams["warmup"]
-    lr_decay_factor = self.hparams["factor"]
-    patience = self.hparams["patience"]
-    T_max = self.hparams["max_epochs"]  # Maximum number of epochs
-    scheduler_type = self.hparams.get("scheduler", "lambda")
+import math
+import torch
+import torch.optim.lr_scheduler as lr_scheduler
+
+def make_lr_scheduler(hparams, optimizer):
+    warmup_epochs = hparams["warmup"]
+    lr_decay_factor = hparams["factor"]
+    patience = hparams["patience"]
+    T_max = hparams["max_epochs"]  # Maximum number of epochs
+    scheduler_type = hparams.get("scheduler", "lambda")
 
     if scheduler_type == "lambda":
         def lr_lambda(epoch):
@@ -26,14 +30,14 @@ def make_lr_scheduler(self, optimizer):
         
     return lr_scheduler.LambdaLR(optimizer, lr_lambda)
 
-def make_optimizer():
+def make_optimizer(model):
 
-    optimizer_type = self.hparams.get("optimizer", "AdamW")
+    optimizer_type = model.hparams.get("optimizer", "AdamW")
     if optimizer_type == "AdamW":
         optimizer = [
             torch.optim.AdamW(
-                self.parameters(),
-                lr=self.hparams["lr"],
+                model.parameters(),
+                lr=model.hparams["lr"],
                 betas=(0.9, 0.999),
                 eps=1e-08,
                 amsgrad=False, 
@@ -42,8 +46,8 @@ def make_optimizer():
     elif optimizer_type == "SGD":
         optimizer = [
             torch.optim.SGD(
-                self.parameters(),
-                lr=self.hparams["lr"],
+                model.parameters(),
+                lr=model.hparams["lr"],
                 momentum=0.9,
             )
         ]

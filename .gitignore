@@ -1,5 +1,7 @@
 **_dev**
 *_dev*
+**.ckpt
+**wandb**
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
