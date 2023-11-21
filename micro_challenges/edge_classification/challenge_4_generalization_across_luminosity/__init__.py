@@ -1,0 +1,3 @@
+from .generalization_across_luminosity_challenge import GeneralizationAcrossLuminosityChallenge
+
+__all__ = ["GeneralizationAcrossLuminosityChallenge"]

@@ -1,0 +1,37 @@
+# CommonFramework configuration
+project: MicroChallenges_EdgeClassification1_Testing # Used in logging
+artifact_dir: /global/cfs/cdirs/m3443/data/GNN4ITK/MicroChallenges/EdgeClassification1/
+challenge: BasicEdgeClassificationChallenge
+network: InteractionNetwork
+gpus: 1
+nodes: 1
+
+# Dataset parameters
+data_split: [500, 100, 10] # Number of [training, validation, testing] examples
+num_particles: 100
+batch_size: 1
+edge_cut: 0.5
+
+# Model parameters
+node_features: [x, y]
+node_scales:   [1., 1.]
+hidden: 128
+nb_node_layer: 2
+nb_edge_layer: 2
+n_graph_iters: 8
+layernorm: True
+batchnorm: False
+aggregation: [SoftmaxAggregation]
+hidden_activation: SiLU
+output_activation: Tanh
+use_checkpoint: False
+
+# Training parameters
+balanced_loss: True
+warmup: 5
+lr: 0.0003
+factor: 0.7
+patience: 20
+max_epochs: 100
+metric_to_monitor: auc
+metric_mode: max

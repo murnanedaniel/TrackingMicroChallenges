@@ -22,4 +22,9 @@ setup(
         'lightning',
         'wandb',
     ],
+    entry_points={
+        'console_scripts': [
+            'mc_train=src.cli.train:main',
+        ],
+    },
 )

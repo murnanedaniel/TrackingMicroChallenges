@@ -28,6 +28,8 @@ Micro-challenges can be run from the command line with the following commands:
 
 We hope you find these micro-challenges engaging and useful in improving your models for particle physics track reconstruction. Happy coding!
 
+-------------
+
 ## List of MicroChallenges
 
 ### Graph Construction
@@ -44,6 +46,8 @@ We hope you find these micro-challenges engaging and useful in improving your mo
 
 #### 6. Module Map Throughput Optimization
 
+------------------
+
 ### Edge Classification
 
 #### 1. Basic Edge Classification
@@ -54,7 +58,13 @@ We hope you find these micro-challenges engaging and useful in improving your mo
 
 #### 4. Generalization Across Luminosity
 
-#### 3. GNN Throughput Optimization
+#### 5. GNN Throughput Optimization
+
+#### 6. GNN Training Memory Optimization
+
+#### 7. Whole-event Correlation
+
+------------------
 
 ### Track Fitting
 
@@ -66,15 +76,21 @@ We hope you find these micro-challenges engaging and useful in improving your mo
 
 #### 4. Trackwise Helix Fitting
 
+------------------------
+
 ### Track Building
 
 #### 1. Mending Broken Tracks
 
 #### 2. Splitting Merged Tracks
 
+------------------------
+
 ### Multi-Task Learning
 
 #### 1. Finding and Fitting Tracks
+
+-------------------------
 
 ### From Simulation to Real Data
 
@@ -84,9 +100,14 @@ We hope you find these micro-challenges engaging and useful in improving your mo
 
 #### 3. Uncertainty Quantification
 
+--------------------
+
 ### Generalist Models
 
 #### 1. Foundation Training with Downstream Fine-Tuning
+
+----------------------
+
 
 ## List of Metrics
 

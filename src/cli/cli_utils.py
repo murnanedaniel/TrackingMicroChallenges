@@ -1,19 +1,8 @@
-# Copyright (C) 2023 CERN for the benefit of the ATLAS collaboration
-
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#    http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 import os
 from pathlib import Path
+from importlib import import_module
+import re
+import sys
 
 import torch
 
@@ -22,22 +11,26 @@ try:
 except ImportError:
     wandb = None
 import yaml
-from pytorch_lightning import Trainer
-from pytorch_lightning.callbacks import ModelCheckpoint
 
-from gnn4itk_cf import stages
-from gnn4itk_cf.stages import *  # noqa
-from pytorch_lightning.strategies.ddp import DDPStrategy
-from pytorch_lightning.loggers import CSVLogger
-from pytorch_lightning.loggers.wandb import WandbLogger
+from lightning.pytorch import Trainer
+from lightning.pytorch.callbacks import ModelCheckpoint
+from lightning.pytorch.strategies.ddp import DDPStrategy
+from lightning.pytorch.loggers import CSVLogger
+from lightning.pytorch.loggers.wandb import WandbLogger
 
 
-def str_to_class(stage, model):
+def str_to_class(class_name):
     """
-    Convert a string to a class in the stages directory
+    Convert a string to a class in the current directory
     """
+    # Convert class_name from camel case to snake case
+    module_name = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', class_name)
+    module_name = re.sub('([a-z0-9])([A-Z])', r'\1_\2', module_name).lower()
 
-    return getattr(getattr(stages, stage), model)
+    sys.path.insert(0, os.getcwd())
+    module = import_module(module_name)
+    class_ = getattr(module, class_name)
+    return class_
 
 
 def get_default_root_dir():
@@ -93,7 +86,7 @@ def get_trainer(config, default_root_dir):
     metric_mode = config["metric_mode"] if "metric_mode" in config else "min"
 
     checkpoint_callback = ModelCheckpoint(
-        dirpath=os.path.join(config["stage_dir"], "artifacts"),
+        dirpath=os.path.join(config["artifact_dir"], "artifacts"),
         filename="best",
         monitor=metric_to_monitor,
         mode=metric_mode,
@@ -111,14 +104,15 @@ def get_trainer(config, default_root_dir):
     )
 
     logger = (
-        WandbLogger(project=config["project"], save_dir=config["stage_dir"], id=job_id)
+        WandbLogger(project=config["project"], save_dir=config["artifact_dir"], id=job_id)
         if wandb is not None and config.get("log_wandb", True)
-        else CSVLogger(save_dir=config["stage_dir"])
+        else CSVLogger(save_dir=config["artifact_dir"])
     )
 
     gpus = config.get("gpus", 0)
-    accelerator = "gpu" if gpus else None
-    devices = gpus or None
+    accelerator = "gpu" if gpus else "cpu"
+    devices = gpus or 1
+    torch.set_float32_matmul_precision('medium')
 
     return Trainer(
         accelerator=accelerator,
@@ -132,18 +126,21 @@ def get_trainer(config, default_root_dir):
     )
 
 
-def get_stage_module(config, stage_module_class, checkpoint_path=None):
+def get_module(config, checkpoint_path=None):
+
+    module_class = str_to_class(config["challenge"])
+
     default_root_dir = get_default_root_dir()
     # First check if we need to load a checkpoint
     if checkpoint_path is not None:
-        stage_module, config = load_module(checkpoint_path, stage_module_class)
+        stage_module, config = load_module(checkpoint_path, module_class)
     elif default_root_dir is not None and find_latest_checkpoint(
         default_root_dir, "*.ckpt"
     ):
         checkpoint_path = find_latest_checkpoint(default_root_dir, "*.ckpt")
-        stage_module, config = load_module(checkpoint_path, stage_module_class)
+        stage_module, config = load_module(checkpoint_path, module_class)
     else:
-        stage_module = stage_module_class(config)
+        stage_module = module_class(config)
     return stage_module, config, default_root_dir
 
 

@@ -1,10 +1,15 @@
 # System imports
 import warnings
+import pkgutil
+import importlib
+import importlib.util
+import os
 
 # 3rd party imports
 import lightning.pytorch as pl
 import torch
 from torch_geometric.data import DataLoader
+import class_resolver
 
 import sys
 sys.path.append("../")
@@ -39,6 +44,35 @@ class MicroChallenge(pl.LightningModule):
             self.logger.experiment.define_metric("val_loss", summary="min")
         except Exception:
             warnings.warn("Could not define metrics for W&B")
+
+    def get_model_resolver(self, models_dir):
+        # Create a list to store all the models
+        all_models = []
+
+        # Iterate over all the files in the models directory
+        for _, name, _ in pkgutil.iter_modules([models_dir]):
+            # Create the full file path
+            file_path = os.path.join(models_dir, f'{name}.py')
+
+            # Create a module spec
+            spec = importlib.util.spec_from_file_location(name, file_path)
+
+            # Create a module from the spec
+            module = importlib.util.module_from_spec(spec)
+
+            # Load the module
+            spec.loader.exec_module(module)
+
+            # Iterate over all the items in the module
+            for item_name in dir(module):
+                item = getattr(module, item_name)
+
+                # If the item is a class and is a subclass of torch.nn.Module, add it to the list
+                if isinstance(item, type) and issubclass(item, torch.nn.Module):
+                    all_models.append(item)
+
+        # Initialize the model resolver with the list of all models
+        return class_resolver.Resolver(classes=all_models, base=torch.nn.Module)
 
     def train_dataloader(self):
         if self.trainset is not None:

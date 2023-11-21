@@ -1,0 +1,3 @@
+from .basic_edge_classification_challenge import BasicEdgeClassificationChallenge
+
+__all__ = ["BasicEdgeClassificationChallenge"]
